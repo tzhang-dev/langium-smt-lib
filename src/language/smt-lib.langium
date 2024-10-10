@@ -1,9 +1,11 @@
 grammar SmtLib
 
-entry Model: (as=SPEC_CONSTANT);
+// entry Model: (as=SPEC_CONSTANT);
 
-// S-expressions
-SPEC_CONSTANT: NUMERAL | DECIMAL | HEXADECIMAL | BINARY | STRING;
+// S_EXP: atoms 
+
+// // S-expressions
+// SPEC_CONSTANT: NUMERAL | DECIMAL | HEXADECIMAL | BINARY | STRING;
 
 // Terminals
 hidden terminal WHITE_SPACE_CHAR: /[\s\t\r\n]+/;
