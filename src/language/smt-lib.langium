@@ -1,11 +1,11 @@
 grammar SmtLib
 
-// entry Model: (as=SPEC_CONSTANT);
+entry Model: (expressions=S_EXPR);
 
-// S_EXP: atoms 
-
-// // S-expressions
-// SPEC_CONSTANT: NUMERAL | DECIMAL | HEXADECIMAL | BINARY | STRING;
+// S-expressions
+terminal SPEC_CONSTANT: NUMERAL | DECIMAL | HEXADECIMAL | BINARY | STRING;
+S_EXPR:
+    spec_constants+=SPEC_CONSTANT | symbols+=SYMBOL | keywords+=KEYWORD | '(' s_exps+=S_EXPR ')';
 
 // Terminals
 hidden terminal WHITE_SPACE_CHAR: /[\s\t\r\n]+/;
@@ -21,6 +21,7 @@ terminal BINARY: /'/; // TODO
 terminal STRING: /"([\x20-\x7E\s\t\r\n]|"")+"/;
 terminal SIMPLE_SYMBOL: /(?<![0-9])[a-zA-Z0-9~!@$%^&*_\-+=<>.?\/]+/; // TODO: is not a reserved word
 // terminal QUOTED_SYMBOL: /\|[\x20-\x7E\x80-\u{10FFFF}\s\t\r\n]+\|/;
+terminal SYMBOL: SIMPLE_SYMBOL;
 terminal QUOTED_SYMBOL: /\|[\x20-\x7E\s\t\r\n]+\|/;
 terminal RESERVED_WORD: 'BINARY' | 'DECIMAL' | 'HEXADECIMAL' | 'NUMERAL' | 'STRING' | '_' | '!' | 'as' | 'let' | 'exists' | 'forall' | 'match' | 'par';
 terminal KEYWORD: ':' SIMPLE_SYMBOL;

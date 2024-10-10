@@ -17,34 +17,16 @@ export const SmtLibGrammar = (): Grammar => loadedSmtLibGrammar ?? (loadedSmtLib
       "name": "Model",
       "entry": true,
       "definition": {
-        "$type": "Alternatives",
-        "elements": [
-          {
-            "$type": "Assignment",
-            "feature": "persons",
-            "operator": "+=",
-            "terminal": {
-              "$type": "RuleCall",
-              "rule": {
-                "$ref": "#/rules@1"
-              },
-              "arguments": []
-            }
+        "$type": "Assignment",
+        "feature": "expressions",
+        "operator": "=",
+        "terminal": {
+          "$type": "RuleCall",
+          "rule": {
+            "$ref": "#/rules@2"
           },
-          {
-            "$type": "Assignment",
-            "feature": "greetings",
-            "operator": "+=",
-            "terminal": {
-              "$type": "RuleCall",
-              "rule": {
-                "$ref": "#/rules@2"
-              },
-              "arguments": []
-            }
-          }
-        ],
-        "cardinality": "*"
+          "arguments": []
+        }
       },
       "definesHiddenTokens": false,
       "fragment": false,
@@ -53,68 +35,127 @@ export const SmtLibGrammar = (): Grammar => loadedSmtLibGrammar ?? (loadedSmtLib
       "wildcard": false
     },
     {
-      "$type": "ParserRule",
-      "name": "Person",
+      "$type": "TerminalRule",
+      "name": "SPEC_CONSTANT",
       "definition": {
-        "$type": "Group",
+        "$type": "TerminalAlternatives",
         "elements": [
           {
-            "$type": "Keyword",
-            "value": "person"
+            "$type": "TerminalAlternatives",
+            "elements": [
+              {
+                "$type": "TerminalAlternatives",
+                "elements": [
+                  {
+                    "$type": "TerminalAlternatives",
+                    "elements": [
+                      {
+                        "$type": "TerminalRuleCall",
+                        "rule": {
+                          "$ref": "#/rules@7"
+                        }
+                      },
+                      {
+                        "$type": "TerminalRuleCall",
+                        "rule": {
+                          "$ref": "#/rules@8"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "$type": "TerminalRuleCall",
+                    "rule": {
+                      "$ref": "#/rules@9"
+                    }
+                  }
+                ]
+              },
+              {
+                "$type": "TerminalRuleCall",
+                "rule": {
+                  "$ref": "#/rules@10"
+                }
+              }
+            ]
           },
           {
-            "$type": "Assignment",
-            "feature": "name",
-            "operator": "=",
-            "terminal": {
-              "$type": "RuleCall",
-              "rule": {
-                "$ref": "#/rules@4"
-              },
-              "arguments": []
+            "$type": "TerminalRuleCall",
+            "rule": {
+              "$ref": "#/rules@11"
             }
           }
         ]
       },
-      "definesHiddenTokens": false,
-      "entry": false,
       "fragment": false,
-      "hiddenTokens": [],
-      "parameters": [],
-      "wildcard": false
+      "hidden": false
     },
     {
       "$type": "ParserRule",
-      "name": "Greeting",
+      "name": "S_EXPR",
       "definition": {
-        "$type": "Group",
+        "$type": "Alternatives",
         "elements": [
           {
-            "$type": "Keyword",
-            "value": "Hello"
-          },
-          {
             "$type": "Assignment",
-            "feature": "person",
-            "operator": "=",
+            "feature": "spec_constants",
+            "operator": "+=",
             "terminal": {
-              "$type": "CrossReference",
-              "type": {
+              "$type": "RuleCall",
+              "rule": {
                 "$ref": "#/rules@1"
               },
-              "terminal": {
-                "$type": "RuleCall",
-                "rule": {
-                  "$ref": "#/rules@4"
-                },
-                "arguments": []
-              },
-              "deprecatedSyntax": false
+              "arguments": []
             }
           },
           {
-            "$type": "Keyword",
-            "value": "!"
+            "$type": "Assignment",
+            "feature": "symbols",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@13"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Assignment",
+            "feature": "keywords",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@16"
+              },
+              "arguments": []
+            }
+          },
+          {
+            "$type": "Group",
+            "elements": [
+              {
+                "$type": "Keyword",
+                "value": "("
+              },
+              {
+                "$type": "Assignment",
+                "feature": "s_exps",
+                "operator": "+=",
+                "terminal": {
+                  "$type": "RuleCall",
+                  "rule": {
+                    "$ref": "#/rules@2"
+                  },
+                  "arguments": []
+                }
+              },
+              {
+                "$type": "Keyword",
+                "value": ")"
+              }
+            ]
           }
         ]
       },
@@ -128,33 +169,99 @@ export const SmtLibGrammar = (): Grammar => loadedSmtLibGrammar ?? (loadedSmtLib
     {
       "$type": "TerminalRule",
       "hidden": true,
-      "name": "WS",
+      "name": "WHITE_SPACE_CHAR",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/\\\\s+/"
+        "regex": "/[\\\\s\\\\t\\\\r\\\\n]+/"
       },
       "fragment": false
     },
     {
       "$type": "TerminalRule",
-      "name": "ID",
+      "name": "PRINTABLE_CHAR",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/[_a-zA-Z][\\\\w_]*/"
+        "regex": "/[\\\\x20-\\\\x7E]/"
       },
       "fragment": false,
       "hidden": false
     },
     {
       "$type": "TerminalRule",
-      "name": "INT",
-      "type": {
-        "$type": "ReturnType",
-        "name": "number"
-      },
+      "name": "DIGIT",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/[0-9]+/"
+        "regex": "/[0-9]/"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "LETTER",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/[a-zA-Z]/"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "NUMERAL",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/0|[1-9][0-9]*/"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "DECIMAL",
+      "definition": {
+        "$type": "TerminalGroup",
+        "elements": [
+          {
+            "$type": "TerminalRuleCall",
+            "rule": {
+              "$ref": "#/rules@7"
+            }
+          },
+          {
+            "$type": "CharacterRange",
+            "left": {
+              "$type": "Keyword",
+              "value": "."
+            }
+          },
+          {
+            "$type": "TerminalRuleCall",
+            "rule": {
+              "$ref": "#/rules@7"
+            }
+          }
+        ]
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "HEXADECIMAL",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/'/"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "BINARY",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/'/"
       },
       "fragment": false,
       "hidden": false
@@ -164,30 +271,223 @@ export const SmtLibGrammar = (): Grammar => loadedSmtLibGrammar ?? (loadedSmtLib
       "name": "STRING",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/\\"(\\\\\\\\.|[^\\"\\\\\\\\])*\\"|'(\\\\\\\\.|[^'\\\\\\\\])*'/"
+        "regex": "/\\"([\\\\x20-\\\\x7E\\\\s\\\\t\\\\r\\\\n]|\\"\\")+\\"/"
       },
       "fragment": false,
       "hidden": false
     },
     {
       "$type": "TerminalRule",
-      "hidden": true,
-      "name": "ML_COMMENT",
+      "name": "SIMPLE_SYMBOL",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/\\\\/\\\\*[\\\\s\\\\S]*?\\\\*\\\\//"
+        "regex": "/(?<![0-9])[a-zA-Z0-9~!@$%^&*_\\\\-+=<>.?\\\\/]+/"
       },
-      "fragment": false
+      "fragment": false,
+      "hidden": false
     },
     {
       "$type": "TerminalRule",
-      "hidden": true,
-      "name": "SL_COMMENT",
+      "name": "SYMBOL",
+      "definition": {
+        "$type": "TerminalRuleCall",
+        "rule": {
+          "$ref": "#/rules@12"
+        }
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "QUOTED_SYMBOL",
       "definition": {
         "$type": "RegexToken",
-        "regex": "/\\\\/\\\\/[^\\\\n\\\\r]*/"
+        "regex": "/\\\\|[\\\\x20-\\\\x7E\\\\s\\\\t\\\\r\\\\n]+\\\\|/"
       },
-      "fragment": false
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "RESERVED_WORD",
+      "definition": {
+        "$type": "TerminalAlternatives",
+        "elements": [
+          {
+            "$type": "TerminalAlternatives",
+            "elements": [
+              {
+                "$type": "TerminalAlternatives",
+                "elements": [
+                  {
+                    "$type": "TerminalAlternatives",
+                    "elements": [
+                      {
+                        "$type": "TerminalAlternatives",
+                        "elements": [
+                          {
+                            "$type": "TerminalAlternatives",
+                            "elements": [
+                              {
+                                "$type": "TerminalAlternatives",
+                                "elements": [
+                                  {
+                                    "$type": "TerminalAlternatives",
+                                    "elements": [
+                                      {
+                                        "$type": "TerminalAlternatives",
+                                        "elements": [
+                                          {
+                                            "$type": "TerminalAlternatives",
+                                            "elements": [
+                                              {
+                                                "$type": "TerminalAlternatives",
+                                                "elements": [
+                                                  {
+                                                    "$type": "TerminalAlternatives",
+                                                    "elements": [
+                                                      {
+                                                        "$type": "CharacterRange",
+                                                        "left": {
+                                                          "$type": "Keyword",
+                                                          "value": "BINARY"
+                                                        }
+                                                      },
+                                                      {
+                                                        "$type": "CharacterRange",
+                                                        "left": {
+                                                          "$type": "Keyword",
+                                                          "value": "DECIMAL"
+                                                        }
+                                                      }
+                                                    ]
+                                                  },
+                                                  {
+                                                    "$type": "CharacterRange",
+                                                    "left": {
+                                                      "$type": "Keyword",
+                                                      "value": "HEXADECIMAL"
+                                                    }
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "$type": "CharacterRange",
+                                                "left": {
+                                                  "$type": "Keyword",
+                                                  "value": "NUMERAL"
+                                                }
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "$type": "CharacterRange",
+                                            "left": {
+                                              "$type": "Keyword",
+                                              "value": "STRING"
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "$type": "CharacterRange",
+                                        "left": {
+                                          "$type": "Keyword",
+                                          "value": "_"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "$type": "CharacterRange",
+                                    "left": {
+                                      "$type": "Keyword",
+                                      "value": "!"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "$type": "CharacterRange",
+                                "left": {
+                                  "$type": "Keyword",
+                                  "value": "as"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "$type": "CharacterRange",
+                            "left": {
+                              "$type": "Keyword",
+                              "value": "let"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "$type": "CharacterRange",
+                        "left": {
+                          "$type": "Keyword",
+                          "value": "exists"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "$type": "CharacterRange",
+                    "left": {
+                      "$type": "Keyword",
+                      "value": "forall"
+                    }
+                  }
+                ]
+              },
+              {
+                "$type": "CharacterRange",
+                "left": {
+                  "$type": "Keyword",
+                  "value": "match"
+                }
+              }
+            ]
+          },
+          {
+            "$type": "CharacterRange",
+            "left": {
+              "$type": "Keyword",
+              "value": "par"
+            }
+          }
+        ]
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "KEYWORD",
+      "definition": {
+        "$type": "TerminalGroup",
+        "elements": [
+          {
+            "$type": "CharacterRange",
+            "left": {
+              "$type": "Keyword",
+              "value": ":"
+            }
+          },
+          {
+            "$type": "TerminalRuleCall",
+            "rule": {
+              "$ref": "#/rules@12"
+            }
+          }
+        ]
+      },
+      "fragment": false,
+      "hidden": false
     }
   ],
   "definesHiddenTokens": false,

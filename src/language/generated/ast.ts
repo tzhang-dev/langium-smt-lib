@@ -4,32 +4,19 @@
  ******************************************************************************/
 
 /* eslint-disable */
-import type { AstNode, Reference, ReferenceInfo, TypeMetaData } from 'langium';
+import type { AstNode, ReferenceInfo, TypeMetaData } from 'langium';
 import { AbstractAstReflection } from 'langium';
 
 export const SmtLibTerminals = {
-    WS: /\s+/,
-    ID: /[_a-zA-Z][\w_]*/,
-    ML_COMMENT: /\/\*[\s\S]*?\*\//,
-    SL_COMMENT: /\/\/[^\n\r]*/,
+    SPEC_CONSTANT: /(((((0|[1-9][0-9]*)|(((0|[1-9][0-9]*)\.(0|[1-9][0-9]*))))|('))|('))|("([\x20-\x7E\s\t\r\n]|"")+"))/,
+    WHITE_SPACE_CHAR: /[\s\t\r\n]+/,
+    SYMBOL: /((?<![0-9])[a-zA-Z0-9~!@$%^&*_\-+=<>.?\/]+)/,
+    KEYWORD: /(:((?<![0-9])[a-zA-Z0-9~!@$%^&*_\-+=<>.?\/]+))/,
 };
-
-export interface Greeting extends AstNode {
-    readonly $container: Model;
-    readonly $type: 'Greeting';
-    person: Reference<Person>;
-}
-
-export const Greeting = 'Greeting';
-
-export function isGreeting(item: unknown): item is Greeting {
-    return reflection.isInstance(item, Greeting);
-}
 
 export interface Model extends AstNode {
     readonly $type: 'Model';
-    greetings: Array<Greeting>;
-    persons: Array<Person>;
+    expressions: S_EXPR;
 }
 
 export const Model = 'Model';
@@ -38,28 +25,30 @@ export function isModel(item: unknown): item is Model {
     return reflection.isInstance(item, Model);
 }
 
-export interface Person extends AstNode {
-    readonly $container: Model;
-    readonly $type: 'Person';
-    name: string;
+export interface S_EXPR extends AstNode {
+    readonly $container: Model | S_EXPR;
+    readonly $type: 'S_EXPR';
+    keywords: Array<string>;
+    s_exps: Array<S_EXPR>;
+    spec_constants: Array<string>;
+    symbols: Array<string>;
 }
 
-export const Person = 'Person';
+export const S_EXPR = 'S_EXPR';
 
-export function isPerson(item: unknown): item is Person {
-    return reflection.isInstance(item, Person);
+export function isS_EXPR(item: unknown): item is S_EXPR {
+    return reflection.isInstance(item, S_EXPR);
 }
 
 export type SmtLibAstType = {
-    Greeting: Greeting
     Model: Model
-    Person: Person
+    S_EXPR: S_EXPR
 }
 
 export class SmtLibAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return [Greeting, Model, Person];
+        return [Model, S_EXPR];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -73,9 +62,6 @@ export class SmtLibAstReflection extends AbstractAstReflection {
     getReferenceType(refInfo: ReferenceInfo): string {
         const referenceId = `${refInfo.container.$type}:${refInfo.property}`;
         switch (referenceId) {
-            case 'Greeting:person': {
-                return Person;
-            }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);
             }
@@ -84,28 +70,22 @@ export class SmtLibAstReflection extends AbstractAstReflection {
 
     getTypeMetaData(type: string): TypeMetaData {
         switch (type) {
-            case Greeting: {
-                return {
-                    name: Greeting,
-                    properties: [
-                        { name: 'person' }
-                    ]
-                };
-            }
             case Model: {
                 return {
                     name: Model,
                     properties: [
-                        { name: 'greetings', defaultValue: [] },
-                        { name: 'persons', defaultValue: [] }
+                        { name: 'expressions' }
                     ]
                 };
             }
-            case Person: {
+            case S_EXPR: {
                 return {
-                    name: Person,
+                    name: S_EXPR,
                     properties: [
-                        { name: 'name' }
+                        { name: 'keywords', defaultValue: [] },
+                        { name: 's_exps', defaultValue: [] },
+                        { name: 'spec_constants', defaultValue: [] },
+                        { name: 'symbols', defaultValue: [] }
                     ]
                 };
             }
